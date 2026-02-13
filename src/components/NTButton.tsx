@@ -5,16 +5,21 @@ import { NetworkTablesTypeInfos } from 'ntcore-ts-client';
 interface NTButtonProps {
   topic: string;
   label: string;
+  initialValue?: boolean;
 }
 
-export const NTButton: React.FC<NTButtonProps> = ({ topic, label }) => {
+export const NTButton: React.FC<NTButtonProps> = ({ topic, label, initialValue = false }) => {
   const { nt } = useNetworkTables();
-  const [value, setValue] = useState<boolean>(false);
+  const [value, setValue] = useState<boolean>(initialValue);
 
   useEffect(() => {
     if (!nt) return;
 
-    const ntTopic = nt.createTopic<boolean>(topic, NetworkTablesTypeInfos.kBoolean);
+    const ntTopic = nt.createTopic<boolean>(topic, NetworkTablesTypeInfos.kBoolean, initialValue);
+    
+    // Publish immediately so the robot sees the initial value
+    ntTopic.publish();
+
     const subuid = ntTopic.subscribe((newValue) => {
       if (newValue !== null) setValue(newValue);
     });
@@ -22,7 +27,7 @@ export const NTButton: React.FC<NTButtonProps> = ({ topic, label }) => {
     return () => {
       ntTopic.unsubscribe(subuid);
     };
-  }, [nt, topic]);
+  }, [nt, topic, initialValue]);
 
   const handleClick = async () => {
     if (!nt) return;
