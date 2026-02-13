@@ -3,6 +3,7 @@ import { NTButton } from './components/NTButton';
 import { NTMomentaryButton } from './components/NTMomentaryButton';
 import { NTNumberReadout } from './components/NTNumberReadout';
 import { NTSlider } from './components/NTSlider';
+import { NTClock } from './components/NTClock';
 
 const ConnectionStatus = () => {
   const { connected } = useNetworkTables();
@@ -20,12 +21,16 @@ function Dashboard() {
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <ConnectionStatus />
       
-      <header className="mb-12">
-        <h1 className="text-4xl font-bold text-blue-400">FRC Dashboard 2026</h1>
-        <p className="text-gray-400 mt-2">Skeleton project for NT4 connection</p>
+      <header className="mb-8 flex flex-col items-center text-center">
+        <h1 className="text-2xl font-bold text-gray-500 uppercase tracking-tighter">FRC Dashboard 2026</h1>
+        
+        {/* Top Middle Clock */}
+        <div className="mt-6 mb-4">
+          <NTClock topic="/FMS" label="Match Timer" />
+        </div>
       </header>
 
-      <main className="space-y-8">
+      <main className="space-y-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Toggle Buttons */}
           <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
@@ -54,11 +59,11 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Settings / Sliders Area */}
+        {/* Settings Area */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <NTSlider topic="/dashboard/detune" label="Drive Detune" min={0} max={1} step={0.05} />
           <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 border-dashed flex items-center justify-center">
-            <p className="text-gray-500 text-center">More configuration settings here</p>
+            <p className="text-gray-500 text-center">Additional robot configuration</p>
           </div>
         </div>
       </main>

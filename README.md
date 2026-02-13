@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# FRC Dashboard 2026
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, high-performance web dashboard for FRC robots using **React**, **TypeScript**, and **NetworkTables 4 (NT4)**.
 
-Currently, two official plugins are available:
+## 🚀 Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Installation
+Ensure you have [Node.js](https://nodejs.org/) installed, then run:
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 2. Configuration
+Open `src/App.tsx` and update the `robotIp` variable:
+```typescript
+const robotIp = '10.TE.AM.2'; // Your Team Number or '127.0.0.1' for Sim
 ```
+
+### 3. Running the Dashboard
+```bash
+npm run dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+---
+
+## 🛠 Project Structure & Logic
+
+This project is built using **Vite + React + Tailwind CSS**.
+
+### Dependencies (The "Requirements")
+In Node.js projects, dependencies are managed in **`package.json`** (equivalent to `requirements.txt` in Python).
+- `ntcore-ts-client`: Handles the NT4 WebSocket connection.
+- `tailwindcss`: Utility-first CSS framework for styling.
+- `lucide-react`: Icon library (optional).
+
+### Custom Components
+All components are designed to be **bidirectional**: they update when the robot sends data, and they send data when you interact with them.
+
+| Component | Path | Description |
+| :--- | :--- | :--- |
+| **NTButton** | `src/components/NTButton.tsx` | A toggle button (Boolean). |
+| **NTMomentary** | `src/components/NTMomentaryButton.tsx` | Active only while pressed (Boolean). |
+| **NTNumber** | `src/components/NTNumberReadout.tsx` | Displays numeric values (Voltage, Sensors). |
+| **NTSlider** | `src/components/NTSlider.tsx` | Adjustable slider (0.0 to 1.0). |
+| **NTClock** | `src/components/NTClock.tsx` | Match timer with mode-based color coding. |
+
+---
+
+## 🤖 Robot Side Integration (Java Example)
+
+To talk to this dashboard, use the standard WPILib NetworkTables API:
+
+```java
+// Match Timer
+NetworkTableInstance.getDefault()
+    .getTable("FMS")
+    .getEntry("time")
+    .setDouble(135.0);
+
+// Buttons
+boolean intake = NetworkTableInstance.getDefault()
+    .getTable("dashboard")
+    .getEntry("intake")
+    .getBoolean(false);
+```
+
+## 🏗 Building for Competition
+To create a fast, production-ready version of the dashboard for use at events:
+```bash
+npm run build
+```
+The optimized files will be in the `/dist` folder.
