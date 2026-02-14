@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNetworkTables } from '../NetworkTablesContext';
-import { NetworkTablesTypeInfos } from 'ntcore-ts-client';
+import { NetworkTablesTypeInfos, NetworkTablesTopic } from 'ntcore-ts-client';
 
 interface NTButtonProps {
   topic: string;
@@ -9,16 +9,47 @@ interface NTButtonProps {
 }
 
 export const NTButton: React.FC<NTButtonProps> = ({ topic, label, initialValue = false }) => {
-  const { nt } = useNetworkTables();
+  const { nt, connected } = useNetworkTables();
   const [value, setValue] = useState<boolean>(initialValue);
+  const ntTopicRef = useRef<NetworkTablesTopic<boolean> | null>(null);
 
   useEffect(() => {
-    if (!nt) return;
+    if (!nt || !connected) return;
 
-    const ntTopic = nt.createTopic<boolean>(topic, NetworkTablesTypeInfos.kBoolean, initialValue);
+    const ntTopic = nt.createTopic<boolean>(topic, NetworkTablesTypeInfos.kBoolean);
+    ntTopicRef.current = ntTopic;
     
-    // Publish immediately so the robot sees the initial value
-    ntTopic.publish();
+    const setup = async () => {
+        // Stagger the initial start to avoid overwhelming the server
+        await new Promise(r => setTimeout(r, Math.random() * 1000));
+
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (attempts < maxAttempts) {
+            try {
+                await ntTopic.publish();
+                
+                // If we reach here, publish succeeded
+                if (ntTopic.getValue() === null) {
+                    ntTopic.setValue(initialValue);
+                } else {
+                    setValue(ntTopic.getValue() as boolean);
+                }
+                return; // Exit success
+            } catch (err) {
+                attempts++;
+                console.warn(`Publish attempt ${attempts} failed for ${topic}. Retrying...`);
+                if (attempts === maxAttempts) {
+                    console.error(`Failed to publish ${topic} after ${maxAttempts} tries:`, err);
+                } else {
+                    await new Promise(r => setTimeout(r, 1000)); // Wait before retry
+                }
+            }
+        }
+    };
+
+    setup();
 
     const subuid = ntTopic.subscribe((newValue) => {
       if (newValue !== null) setValue(newValue);
@@ -26,16 +57,15 @@ export const NTButton: React.FC<NTButtonProps> = ({ topic, label, initialValue =
 
     return () => {
       ntTopic.unsubscribe(subuid);
+      ntTopicRef.current = null;
     };
-  }, [nt, topic, initialValue]);
+  }, [nt, connected, topic, initialValue]);
 
-  const handleClick = async () => {
-    if (!nt) return;
-    const ntTopic = nt.createTopic<boolean>(topic, NetworkTablesTypeInfos.kBoolean);
+  const handleClick = () => {
+    const ntTopic = ntTopicRef.current;
+    if (!ntTopic) return;
     
-    // In NT4, you must be a publisher to set a value.
-    // publish() is idempotent if already publishing.
-    await ntTopic.publish();
+    // We already published in useEffect, so we just set the value here
     ntTopic.setValue(!value);
   };
 

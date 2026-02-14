@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNetworkTables } from '../NetworkTablesContext';
-import { NetworkTablesTypeInfos } from 'ntcore-ts-client';
+import { NetworkTablesTypeInfos, NetworkTablesTopic } from 'ntcore-ts-client';
 
 interface NTSliderProps {
   topic: string;
@@ -17,16 +17,36 @@ export const NTSlider: React.FC<NTSliderProps> = ({
   max = 1, 
   step = 0.01 
 }) => {
-  const { nt } = useNetworkTables();
+  const { nt, connected } = useNetworkTables();
   const [value, setValue] = useState<number>(min);
+  const ntTopicRef = useRef<NetworkTablesTopic<number> | null>(null);
 
   useEffect(() => {
-    if (!nt) return;
+    if (!nt || !connected) return;
 
-    const ntTopic = nt.createTopic<number>(topic, NetworkTablesTypeInfos.kDouble, min);
+    const ntTopic = nt.createTopic<number>(topic, NetworkTablesTypeInfos.kDouble);
+    ntTopicRef.current = ntTopic;
     
-    // We want to be able to control this from the dashboard
-    ntTopic.publish();
+    const setup = async () => {
+        await new Promise(r => setTimeout(r, Math.random() * 1000));
+        let attempts = 0;
+        while (attempts < 3) {
+            try {
+                await ntTopic.publish();
+                if (ntTopic.getValue() === null) {
+                    ntTopic.setValue(min);
+                } else {
+                    setValue(ntTopic.getValue() as number);
+                }
+                return;
+            } catch (err) {
+                attempts++;
+                await new Promise(r => setTimeout(r, 1000));
+            }
+        }
+    };
+
+    setup();
 
     const subuid = ntTopic.subscribe((newValue) => {
       if (newValue !== null) setValue(newValue);
@@ -34,16 +54,16 @@ export const NTSlider: React.FC<NTSliderProps> = ({
 
     return () => {
       ntTopic.unsubscribe(subuid);
+      ntTopicRef.current = null;
     };
-  }, [nt, topic, min]);
+  }, [nt, connected, topic, min]);
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(e.target.value);
     setValue(newValue);
     
-    if (nt) {
-      const ntTopic = nt.createTopic<number>(topic, NetworkTablesTypeInfos.kDouble);
-      await ntTopic.publish();
+    const ntTopic = ntTopicRef.current;
+    if (ntTopic) {
       ntTopic.setValue(newValue);
     }
   };

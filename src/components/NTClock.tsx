@@ -18,15 +18,21 @@ export const NTClock: React.FC<NTClockProps> = ({ topic, label, unit = '', preci
         if (!nt) return;
 
         const timeNtTopic = nt.createTopic<number>(topic + "/time", NetworkTablesTypeInfos.kDouble, 0.0);
-        const modeNtTopic = nt.createTopic<string>(topic + "/mode", NetworkTablesTypeInfos.kString, "disabled");
+        const modeNtTopic = nt.createTopic<string>(topic + "/mode", NetworkTablesTypeInfos.kString, "OFFLINE");
 
         const timeSubber = timeNtTopic.subscribe((timeValue) => {
             if (timeValue !== null) setTime(timeValue);
-        })
+        });
 
         const modeSubber = modeNtTopic.subscribe((modeValue) => {
-            if (modeValue !== null) setMode(modeValue);
-        })
+            if (modeValue !== null && modeValue !== "") setMode(modeValue);
+        });
+
+        // Pull current values immediately if they already exist in the cache
+        const initialTime = timeNtTopic.getValue();
+        const initialMode = modeNtTopic.getValue();
+        if (initialTime !== null) setTime(initialTime);
+        if (initialMode !== null && initialMode !== "") setMode(initialMode);
 
         return () => {
             timeNtTopic.unsubscribe(timeSubber);
