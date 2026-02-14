@@ -36,7 +36,7 @@ function Dashboard() {
           <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
             <h2 className="text-xl font-semibold mb-4 text-gray-200">Toggle Controls</h2>
             <div className="flex flex-col gap-4">
-              <NTButton topic="/dashboard/intake" label="Intake" initialValue={false} />
+              <NTButton topic="/dashboard/intake" label="Intake" initialValue={true} />
               <NTButton topic="/dashboard/shooter" label="Shooter" initialValue={true} />
             </div>
           </div>
@@ -46,6 +46,7 @@ function Dashboard() {
             <h2 className="text-xl font-semibold mb-4 text-gray-200">Momentary Controls</h2>
             <div className="flex flex-col gap-4">
               <NTMomentaryButton topic="/dashboard/hippo" label="Hippo" />
+              <NTMomentaryButton topic="/dashboard/climb" label="Climber" />
             </div>
           </div>
 
