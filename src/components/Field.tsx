@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import fieldImage from '../assets/2026 frc field.jpg';
+import fieldImage from '../assets/2026 FRC.png';
 import { useNetworkTables } from '../NetworkTablesContext';
 
 const Field: React.FC = () => {
