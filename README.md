@@ -2,7 +2,7 @@
 
 A modern, high-performance web dashboard for FRC robots using **React**, **TypeScript**, and **NetworkTables 4 (NT4)**.
 
-## 🚀 Quick Start
+## 🚀 Quick Stafrt
 
 ### 1. Installation
 Ensure you have [Node.js](https://nodejs.org/) installed, then run:
