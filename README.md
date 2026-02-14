@@ -6,15 +6,7 @@ A modern, high-performance web dashboard for FRC robots using **React**, **TypeS
 
 ### 1. Installation
 Ensure you have [Node.js](https://nodejs.org/) installed, then run:
-```bash
-npm install
-```
-
-### 2. Configuration
-Open `src/App.tsx` and update the `robotIp` variable:
-```typescript
-const robotIp = '10.TE.AM.2'; // Your Team Number or '127.0.0.1' for Sim
-```
+```bashgemini
 
 ### 3. Running the Dashboard
 ```bash
