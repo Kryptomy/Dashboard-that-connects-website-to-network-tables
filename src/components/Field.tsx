@@ -7,6 +7,7 @@ const Field: React.FC = () => {
   const { setValue } = useNetworkTables();
   const imageRef = useRef<HTMLImageElement>(null);
   const [renderedImageDimensions, setRenderedImageDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [clickedPixelPosition, setClickedPixelPosition] = useState<{ x: number; y: number } | null>(null); // New state for pixel position
 
   const fieldLengthFeet = 57.5; // X-axis
   const fieldWidthFeet = 26.4;  // Y-axis
@@ -48,6 +49,9 @@ const Field: React.FC = () => {
     const clickXInPixels = event.clientX - rect.left;
     const clickYInPixels = event.clientY - rect.top;
 
+    // Store pixel position for the dot
+    setClickedPixelPosition({ x: clickXInPixels, y: clickYInPixels });
+
     // Scale to real-world dimensions (feet)
     const xFeet = (clickXInPixels / renderedImageDimensions.width) * fieldLengthFeet;
     const yFeet = (clickYInPixels / renderedImageDimensions.height) * fieldWidthFeet;
@@ -83,6 +87,20 @@ const Field: React.FC = () => {
             objectFit: 'contain', // Ensure image fits within the aspect ratio box
           }}
         />
+        {clickedPixelPosition && (
+          <div
+            style={{
+              position: 'absolute',
+              left: clickedPixelPosition.x - 5, // Offset by half dot size for centering (dot is 10px)
+              top: clickedPixelPosition.y - 5,  // Offset by half dot size for centering
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              backgroundColor: 'red',
+              zIndex: 10,
+            }}
+          />
+        )}
       </div>
       {pose && (
         <div>
